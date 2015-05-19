@@ -18,10 +18,9 @@ package com.hazelcast.wm.test;
 
 import com.hazelcast.core.IMap;
 import com.hazelcast.test.HazelcastSerialClassRunner;
-import com.hazelcast.test.annotation.SlowTest;
+import com.hazelcast.test.annotation.QuickTest;
 import org.apache.http.client.CookieStore;
 import org.apache.http.impl.client.BasicCookieStore;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -41,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(WebTestRunner.class)
 @DelegatedRunWith(HazelcastSerialClassRunner.class)
-@Category(SlowTest.class)
+@Category(QuickTest.class)
 public class WebFilterSessionCleanupTest extends AbstractWebFilterTest {
 
     public WebFilterSessionCleanupTest() {
@@ -49,7 +48,6 @@ public class WebFilterSessionCleanupTest extends AbstractWebFilterTest {
     }
 
     @Test(timeout = 130000)
-    @Ignore
     public void testSessionTimeout() throws Exception {
         IMap<String, Object> map = hz.getMap(DEFAULT_MAP_NAME);
         CookieStore cookieStore = new BasicCookieStore();
