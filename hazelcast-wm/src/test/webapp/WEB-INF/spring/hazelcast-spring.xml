@@ -54,9 +54,6 @@
         <dispatcher>INCLUDE</dispatcher>
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
-    <listener>
-        <listener-class>com.hazelcast.web.SessionListener</listener-class>
-    </listener>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>

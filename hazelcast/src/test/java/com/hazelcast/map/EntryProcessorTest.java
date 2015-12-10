@@ -76,7 +76,9 @@ public class EntryProcessorTest extends HazelcastTestSupport {
 
     @Test
     public void testExecuteOnEntriesWithEntryListener() {
-        HazelcastInstance instance = createHazelcastInstance(getConfig());
+        Config config = new Config();
+        config.getMapConfig("map");
+        HazelcastInstance instance = createHazelcastInstance();
         final IMap<String, String> map = instance.getMap("map");
         map.put("key", "value");
         final CountDownLatch latch = new CountDownLatch(1);
@@ -97,6 +99,7 @@ public class EntryProcessorTest extends HazelcastTestSupport {
                 return 5;
             }
         });
+
         assertOpenEventually(latch, 5);
     }
 

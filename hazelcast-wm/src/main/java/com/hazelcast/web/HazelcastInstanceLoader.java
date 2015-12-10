@@ -30,6 +30,7 @@ import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.Logger;
 import com.hazelcast.web.listener.ClientLifecycleListener;
 import com.hazelcast.web.listener.ServerLifecycleListener;
+import com.hazelcast.web.listener.SessionEntryListener;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
@@ -70,7 +71,7 @@ final class HazelcastInstanceLoader {
         }
         if (useClient) {
             boolean isSticky = Boolean.valueOf(properties.getProperty(STICKY_SESSION_CONFIG));
-            return createClientInstance(sessionService, instanceName, configUrl, isSticky);
+            return createClientInstance(sessionService.getFilter(), sessionService, instanceName, configUrl, isSticky);
         }
         Config config;
         if (configUrl == null) {
@@ -82,13 +83,16 @@ final class HazelcastInstanceLoader {
                 throw new ServletException(e);
             }
         }
-        return createHazelcastInstance(sessionService, instanceName, config);
+        return createHazelcastInstance(sessionService.getFilter(), sessionService, instanceName, config);
     }
 
-    private static HazelcastInstance createHazelcastInstance(ClusteredSessionService sessionService,
+    private static HazelcastInstance createHazelcastInstance(WebFilter filter, ClusteredSessionService sessionService,
                                                              String instanceName, Config config) {
         ListenerConfig listenerConfig = new ListenerConfig(new ServerLifecycleListener(sessionService));
+        ListenerConfig entryListener = new ListenerConfig(new SessionEntryListener(filter));
+
         config.addListenerConfig(listenerConfig);
+        config.addListenerConfig(entryListener);
         if (!isEmpty(instanceName)) {
             if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.info(format("getOrCreateHazelcastInstance for session replication, using name '%s'", instanceName));
@@ -101,7 +105,7 @@ final class HazelcastInstanceLoader {
         }
     }
 
-    private static HazelcastInstance createClientInstance(ClusteredSessionService sessionService, String instanceName,
+    private static HazelcastInstance createClientInstance(WebFilter filter, ClusteredSessionService sessionService, String instanceName,
                                                           URL configUrl, boolean isSticky) throws ServletException {
         LOGGER.warning("Creating HazelcastClient for session replication...");
         LOGGER.warning("make sure this client has access to an already running cluster...");
@@ -120,7 +124,9 @@ final class HazelcastInstanceLoader {
             clientConfig.getNetworkConfig().setConnectionAttemptLimit(1);
         }
         ListenerConfig listenerConfig = new ListenerConfig(new ClientLifecycleListener(sessionService));
+        ListenerConfig entryListener = new ListenerConfig(new SessionEntryListener(filter));
         clientConfig.addListenerConfig(listenerConfig);
+        clientConfig.addListenerConfig(entryListener);
         return HazelcastClient.newHazelcastClient(clientConfig);
     }
 

@@ -36,7 +36,7 @@
         </init-param>
         <init-param>
             <param-name>config-location</param-name>
-            <param-value>/WEB-INF/hazelcast.xml</param-value>
+            <param-value>/WEB-INF/hazelcast_with_ttl.xml</param-value>
         </init-param>
         <init-param>
             <param-name>instance-name</param-name>
@@ -77,12 +77,4 @@
         <servlet-name>test-servlet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
-
-    <listener>
-        <listener-class>com.hazelcast.web.SessionListener</listener-class>
-    </listener>
-
-    <session-config>
-        <session-timeout>1</session-timeout>
-    </session-config>
 </web-app>

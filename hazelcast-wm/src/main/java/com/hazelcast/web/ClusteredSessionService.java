@@ -75,6 +75,7 @@ public class ClusteredSessionService {
     private final FilterConfig filterConfig;
     private final Properties properties;
     private final String clusterMapName;
+    private final WebFilter filter;
 
     private final Queue<AbstractMap.SimpleEntry<String, Boolean>> orphanSessions = new
             LinkedBlockingQueue<AbstractMap.SimpleEntry<String, Boolean>>();
@@ -90,10 +91,11 @@ public class ClusteredSessionService {
      * @param properties     the properties
      * @param clusterMapName the cluster map name
      */
-    public ClusteredSessionService(FilterConfig filterConfig, Properties properties, String clusterMapName) {
+    public ClusteredSessionService(WebFilter filter, FilterConfig filterConfig, Properties properties, String clusterMapName) {
         this.filterConfig = filterConfig;
         this.properties = properties;
         this.clusterMapName = clusterMapName;
+        this.filter = filter;
         try {
             init();
         } catch (Exception e) {
@@ -103,6 +105,10 @@ public class ClusteredSessionService {
 
     public void setFailedConnection(boolean failedConnection) {
         this.failedConnection = failedConnection;
+    }
+
+    public WebFilter getFilter() {
+        return filter;
     }
 
     public void init() throws Exception {

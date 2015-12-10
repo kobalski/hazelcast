@@ -37,7 +37,10 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.http.HttpSession;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -125,6 +128,15 @@ public class WebFilter implements Filter {
         return properties;
     }
 
+    public void destroySessionWithHazelcastSessionId(String hazelcastSessionId) {
+        sessions.remove(hazelcastSessionId);
+        for (Map.Entry<String, String> entry : originalSessions.entrySet()) {
+            if (entry.getValue().equals(hazelcastSessionId)) {
+                originalSessions.remove(entry.getKey());
+            }
+        }
+    }
+
     void destroyOriginalSession(HttpSession originalSession) {
         String hazelcastSessionId = originalSessions.remove(originalSession.getId());
         if (hazelcastSessionId != null) {
@@ -155,6 +167,7 @@ public class WebFilter implements Filter {
         return sb.toString();
     }
 
+    @Override
     public final void init(final FilterConfig config)
             throws ServletException {
         filterConfig = config;
@@ -168,10 +181,11 @@ public class WebFilter implements Filter {
         String mapName = getParam("map-name");
         if (mapName == null) {
             mapName = "_web_" + servletContext.getServletContextName();
-        }
-        clusteredSessionService = new ClusteredSessionService(filterConfig, properties, mapName);
+            // int sessionTimeoutFromWebXml = Integer.parseInt(XPathFactory.newInstance().newXPath().compile("web-app/session-config/session-timeout").evaluate(DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(getServletContext().getResourceAsStream("/WEB-INF/web.xml"))));
+            clusteredSessionService = new ClusteredSessionService(this, filterConfig, properties, mapName);
 
-        if (LOGGER.isLoggable(Level.FINEST)) {
+        }
+            if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.finest("sticky:" + stickySession + ", shutdown-on-destroy: " + shutdownOnDestroy
                     + ", map-name: " + mapName);
         }
@@ -337,6 +351,7 @@ public class WebFilter implements Filter {
         return null;
     }
 
+    @Override
     public final void doFilter(ServletRequest req, ServletResponse res, final FilterChain chain)
             throws IOException, ServletException {
         if (!(req instanceof HttpServletRequest)) {
@@ -370,6 +385,7 @@ public class WebFilter implements Filter {
         }
     }
 
+    @Override
     public final void destroy() {
         sessions.clear();
         originalSessions.clear();

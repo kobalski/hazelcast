@@ -69,6 +69,6 @@
     <partition-group enabled="false"/>
     <map name="default">
         <backup-count>1</backup-count>
-        <time-to-live-seconds>20</time-to-live-seconds>
+        <time-to-live-seconds>60</time-to-live-seconds>
     </map>
 </hazelcast>

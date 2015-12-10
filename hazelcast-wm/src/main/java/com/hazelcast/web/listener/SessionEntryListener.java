@@ -4,30 +4,23 @@ import com.hazelcast.core.EntryEvent;
 import com.hazelcast.map.listener.EntryEvictedListener;
 import com.hazelcast.map.listener.EntryRemovedListener;
 import com.hazelcast.web.SessionState;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEventPublisher;
+import com.hazelcast.web.WebFilter;
 
 public class SessionEntryListener implements EntryEvictedListener<String, SessionState>,
         EntryRemovedListener<String, SessionState> {
 
-    private static final Log logger = LogFactory.getLog(SessionEntryListener.class);
+    private final WebFilter filter;
 
-
-    public SessionEntryListener(ApplicationEventPublisher eventPublisher) {
-
+    public SessionEntryListener(WebFilter filter) {
+        this.filter = filter;
     }
 
     public void entryEvicted(EntryEvent<String, SessionState> event) {
-        if(logger.isDebugEnabled()) {
-            logger.debug("Session expired with id: " + event.getOldValue().get;
-        }
+        filter.destroySessionWithHazelcastSessionId(event.getKey());
     }
 
     public void entryRemoved(EntryEvent<String, SessionState> event) {
-        if(logger.isDebugEnabled()) {
-            logger.debug("Session deleted with id: " + event.getOldValue().getId());
-        }
+        filter.destroySessionWithHazelcastSessionId(event.getKey());
     }
 
 }
